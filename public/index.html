@@ -287,7 +287,8 @@
       input.value = '';
       appendMessage('bot', '<i>Typing...</i>');
 
-      fetch('https://chatbot-mmw8.onrender.com/chat', {
+     fetch('/api/chat', {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message })
