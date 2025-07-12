@@ -263,7 +263,7 @@
 </div>
 
 
-  <script>
+ <script>
     const chat = document.getElementById('chat');
     const input = document.getElementById('userInput');
     let isMuted = false;
@@ -287,8 +287,7 @@
       input.value = '';
       appendMessage('bot', '<i>Typing...</i>');
 
-     fetch('/api/chat', {
-
+      fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message })
@@ -296,9 +295,16 @@
       .then(res => res.json())
       .then(data => {
         chat.lastChild.remove();
-        const reply = data.output?.choices?.[0]?.text || '⚠️ No reply.';
+        console.log("Response from backend:", data);
+
+        const reply =
+          data.output?.choices?.[0]?.message?.content ||
+          data.output?.choices?.[0]?.text ||
+          data.output ||
+          '⚠️ No reply.';
+
         appendMessage('bot', reply);
-        // if (!isMuted) speak(reply);
+        if (!isMuted) speak(reply);
       })
       .catch(err => {
         chat.lastChild.remove();
@@ -307,11 +313,11 @@
       });
     }
 
-    // function speak(text) {
-    //   const utterance = new SpeechSynthesisUtterance(text);
-    //   utterance.lang = 'en-US';
-    //   speechSynthesis.speak(utterance);
-    // }
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      speechSynthesis.speak(utterance);
+    }
 
     function toggleMute() {
       isMuted = !isMuted;
@@ -321,84 +327,80 @@
     }
 
     function shareBot() {
-  const url = "https://promptpilot-ai.onrender.com";
-  const shareText = "🚀 Check out PromtPilot – your personal AI assistant By PrimeKris!\n" + url;
+      const url = "https://promptpilot-ai.onrender.com";
+      const shareText = "🚀 Check out PromtPilot – your personal AI assistant By PrimeKris!\n" + url;
 
-  if (navigator.share) {
-    navigator.share({
-      title: "BloggyBot",
-      text: shareText,
-      url: url
-    })
-    .then(() => console.log('Shared successfully!'))
-    .catch((error) => console.log('Sharing failed:', error));
-  } else {
-    navigator.clipboard.writeText(shareText).then(() => {
-      alert("🔗 Link copied to clipboard! Share it with your friends.");
-    });
-  }
-}
+      if (navigator.share) {
+        navigator.share({
+          title: "BloggyBot",
+          text: shareText,
+          url: url
+        })
+        .then(() => console.log('Shared successfully!'))
+        .catch((error) => console.log('Sharing failed:', error));
+      } else {
+        navigator.clipboard.writeText(shareText).then(() => {
+          alert("🔗 Link copied to clipboard! Share it with your friends.");
+        });
+      }
+    }
 
     function startSpeech() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    alert("❌ Speech Recognition not supported in this browser.");
-    return;
-  }
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("❌ Speech Recognition not supported in this browser.");
+        return;
+      }
 
-  const recognition = new SpeechRecognition();
-  recognition.lang = 'en-US';
-  recognition.start();
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.start();
 
-  // Add animation class to mic
-  const micBtn = document.getElementById("micBtn");
-  micBtn.classList.add("listening");
+      const micBtn = document.getElementById("micBtn");
+      micBtn.classList.add("listening");
 
-  recognition.onresult = function(event) {
-    const transcript = event.results[0][0].transcript;
-    document.getElementById("userInput").value = transcript;
-    micBtn.classList.remove("listening");
-  };
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("userInput").value = transcript;
+        micBtn.classList.remove("listening");
+      };
 
-  recognition.onerror = function(event) {
-    alert("🎙️ Mic error: " + event.error);
-    console.error("Speech error:", event.error);
-    micBtn.classList.remove("listening");
-  };
+      recognition.onerror = function(event) {
+        alert("🎙️ Mic error: " + event.error);
+        console.error("Speech error:", event.error);
+        micBtn.classList.remove("listening");
+      };
 
-  recognition.onend = function() {
-    micBtn.classList.remove("listening");
-  };
-}
+      recognition.onend = function() {
+        micBtn.classList.remove("listening");
+      };
+    }
+
     function speakLastMessage() {
-  const lastBotMessage = [...document.querySelectorAll('.bubble.bot')]
-    .pop()?.innerText;
+      const lastBotMessage = [...document.querySelectorAll('.bubble.bot')].pop()?.innerText;
 
-  if (!lastBotMessage) {
-    alert("❌ No bot message found.");
-    return;
-  }
+      if (!lastBotMessage) {
+        alert("❌ No bot message found.");
+        return;
+      }
 
-  const speakBtn = document.getElementById("speakBtn");
+      const speakBtn = document.getElementById("speakBtn");
 
-  const utterance = new SpeechSynthesisUtterance(lastBotMessage);
-  utterance.lang = 'en-US';
+      const utterance = new SpeechSynthesisUtterance(lastBotMessage);
+      utterance.lang = 'en-US';
 
-  // 🌟 Start glow animation
-  speakBtn.classList.add("speaking");
+      speakBtn.classList.add("speaking");
 
-  utterance.onend = () => {
-    // 🛑 Stop glow when done
-    speakBtn.classList.remove("speaking");
-  };
+      utterance.onend = () => {
+        speakBtn.classList.remove("speaking");
+      };
 
-  utterance.onerror = () => {
-    // 🛑 Also stop on error
-    speakBtn.classList.remove("speaking");
-    alert("⚠️ Voice failed to play.");
-  };
+      utterance.onerror = () => {
+        speakBtn.classList.remove("speaking");
+        alert("⚠️ Voice failed to play.");
+      };
 
-  speechSynthesis.speak(utterance);
+      speechSynthesis.speak(utterance);
     }
   </script>
 </body>
