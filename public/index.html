@@ -295,17 +295,19 @@
   })
     .then(res => res.json())
     .then(data => {
-      chat.lastChild.remove();
-      console.log("Response from backend:", data);
+  chat.lastChild.remove();
+  console.log("Response from backend:", data);
 
-      const reply =
-        data.output?.choices?.[0]?.message?.content ||
-        data.output?.choices?.[0]?.text ||
-        data.output ||
-        '⚠️ No reply.';
+  const reply =
+    data.choices?.[0]?.message?.content || // OpenAI-style
+    data.choices?.[0]?.text ||             // Together-style
+    data.output?.choices?.[0]?.text ||     // fallback
+    data.output ||                         // raw fallback
+    '⚠️ No reply.';
 
-      appendMessage('bot', reply);
-    })
+  appendMessage('bot', reply);
+})
+
     .catch(err => {
       chat.lastChild.remove();
       appendMessage('bot', '⚠️ Server error.');
