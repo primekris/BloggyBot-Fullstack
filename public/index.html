@@ -293,25 +293,20 @@
     body: JSON.stringify({ message })
   })
   .then(res => res.json())
-  .then(data => {
-    chat.lastChild.remove();
-    console.log("Response from backend:", data);
+ .then(data => {
+  chat.lastChild.remove();
+  console.log("Response from backend:", data);
 
-    const reply =
-      data.output?.choices?.[0]?.message?.content ||  // for OpenAI-style
-      data.output?.choices?.[0]?.text ||              // for Together-style
-      data.output ||                                  // for direct string output
-      '⚠️ No reply.';
+  const reply =
+    data.output?.choices?.[0]?.message?.content || // ✅ for OpenAI-style
+    data.output?.choices?.[0]?.text ||             // ✅ for Together "text"
+    data.output ||                                 // ✅ raw string
+    '⚠️ No reply.';
 
-    appendMessage('bot', reply);
-    if (!isMuted) speak(reply);  // ✅ only if not muted
-  })
-  .catch(err => {
-    chat.lastChild.remove();
-    appendMessage('bot', '⚠️ Server error.');
-    console.error("Fetch error:", err);
-  });
-}
+  appendMessage('bot', reply);
+  if (!isMuted) speak(reply);
+})
+
 
     // function speak(text) {
     //   const utterance = new SpeechSynthesisUtterance(text);
