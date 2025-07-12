@@ -11,7 +11,8 @@ app.use(express.static('public')); // ✅ serve frontend
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY;
 
 app.post('/api/chat', async (req, res) => {
-  const { message, model = "mistral-7b-instruct", persona = "You are a helpful assistant." } = req.body;
+ const { message, model = "mistralai/Mistral-7B-Instruct-v0.2", persona = "You are a helpful assistant." } = req.body;
+
   try {
     const response = await axios.post(
       "https://api.together.xyz/v1/chat/completions",
