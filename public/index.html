@@ -283,6 +283,7 @@
    function sendMessage() {
   const message = input.value.trim();
   if (!message) return;
+
   appendMessage('user', message);
   input.value = '';
   appendMessage('bot', '<i>Typing...</i>');
@@ -292,21 +293,26 @@
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message })
   })
-  .then(res => res.json())
- .then(data => {
-  chat.lastChild.remove();
-  console.log("Response from backend:", data);
+    .then(res => res.json())
+    .then(data => {
+      chat.lastChild.remove();
+      console.log("Response from backend:", data);
 
-  const reply =
-    data.output?.choices?.[0]?.message?.content || // ✅ for OpenAI-style
-    data.output?.choices?.[0]?.text ||             // ✅ for Together "text"
-    data.output ||                                 // ✅ raw string
-    '⚠️ No reply.';
+      const reply =
+        data.output?.choices?.[0]?.message?.content ||
+        data.output?.choices?.[0]?.text ||
+        data.output ||
+        '⚠️ No reply.';
 
-  appendMessage('bot', reply);
- // if (!isMuted) speak(reply);  ← Remove or comment this line
+      appendMessage('bot', reply);
+    })
+    .catch(err => {
+      chat.lastChild.remove();
+      appendMessage('bot', '⚠️ Server error.');
+      console.error("Fetch error:", err);
+    });
+}
 
-})
 
 
     // function speak(text) {
