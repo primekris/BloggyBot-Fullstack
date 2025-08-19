@@ -11,11 +11,11 @@ app.use(express.static('public')); // ✅ serve frontend
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY;
 
 app.post('/api/chat', async (req, res) => {
- const { message, model = "gemini-2.0-flash", persona = "You are a helpful assistant." } = req.body;
+ const { message, model = "meta-llama/llama-4-scout-17b-16e-instruct", persona = "You are a helpful assistant." } = req.body;
 
   try {
     const response = await axios.post(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}",
+      " https://api.groq.com/openai/v1/chat/completions",
       {
         model,
         messages: [
