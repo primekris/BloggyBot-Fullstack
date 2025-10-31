@@ -292,13 +292,34 @@
   }, speed);
 }
 
-   function sendMessage() {
+function scrollToBottom() {
+  chat.scrollTo({
+    top: chat.scrollHeight,
+    behavior: "smooth"
+  });
+}
+
+function typeEffect(element, text, speed = 25) {
+  let index = 0;
+  const interval = setInterval(() => {
+    if (index < text.length) {
+      element.innerHTML += text.charAt(index);
+      scrollToBottom(); // 👈 Keeps chat moving as it types
+      index++;
+    } else {
+      clearInterval(interval);
+    }
+  }, speed);
+}
+
+function sendMessage() {
   const message = input.value.trim();
   if (!message) return;
 
   appendMessage('user', message);
   input.value = '';
   appendMessage('bot', '<i>Typing...</i>');
+  scrollToBottom();
 
   fetch('/api/chat', {
     method: 'POST',
@@ -306,47 +327,53 @@
     body: JSON.stringify({ message })
   })
     .then(res => res.json())
-  .then(data => {
-  console.log("Response from backend:", data);
+    .then(data => {
+      console.log("Response from backend:", data);
 
-  const reply =
-    data.choices?.[0]?.message?.content || // OpenAI-style
-    data.choices?.[0]?.text ||             // Together-style
-    data.output?.choices?.[0]?.text ||     // fallback
-    data.output ||                         // raw fallback
-    '⚠️ No reply.';
+      const reply =
+        data.choices?.[0]?.message?.content || // OpenAI-style
+        data.choices?.[0]?.text ||             // Together-style
+        data.output?.choices?.[0]?.text ||     // fallback
+        data.output ||                         // raw fallback
+        '⚠️ No reply.';
 
-  // ✅ Remove ONLY the "Typing..." bubble safely
-  const typingBubble = document.querySelector('.bubble.bot i');
-  if (typingBubble && typingBubble.parentElement) {
-    typingBubble.parentElement.remove();
-  }
+      // ✅ Remove ONLY the "Typing..." bubble safely
+      const typingBubble = document.querySelector('.bubble.bot i');
+      if (typingBubble && typingBubble.parentElement) {
+        typingBubble.parentElement.remove();
+      }
 
-  // ✅ Create a new bubble for the bot’s message
-  const bubble = document.createElement('div');
-  bubble.classList.add('bubble', 'bot');
-  chat.appendChild(bubble);
-  chat.scrollTop = chat.scrollHeight;
+      // ✅ Create a new bubble for the bot’s message
+      const bubble = document.createElement('div');
+      bubble.classList.add('bubble', 'bot');
+      chat.appendChild(bubble);
+      scrollToBottom(); // 👈 Smooth scroll after bubble appears
 
-  // ✅ Apply typing effect
-  typeEffect(bubble, reply, 25);
+      // ✅ Apply typing effect
+      typeEffect(bubble, reply, 25);
 
-  // ✅ Add timestamp after typing finishes
-  setTimeout(() => {
-    const stamp = document.createElement('div');
-    stamp.className = 'timestamp';
-    stamp.textContent = new Date().toLocaleTimeString();
-    bubble.appendChild(stamp);
-    chat.scrollTop = chat.scrollHeight;
-  }, reply.length * 25 + 300);
-})
-
-
+      // ✅ Add timestamp after typing finishes
+      setTimeout(() => {
+        const stamp = document.createElement('div');
+        stamp.className = 'timestamp';
+        stamp.textContent = new Date().toLocaleTimeString();
+        bubble.appendChild(stamp);
+        scrollToBottom();
+      }, reply.length * 25 + 300);
+    })
     .catch(err => {
-      chat.lastChild.remove();
-      appendMessage('bot', '⚠️ Server error.');
+      // Remove typing bubble on error
+      const typingBubble = document.querySelector('.bubble.bot i');
+      if (typingBubble && typingBubble.parentElement) {
+        typingBubble.parentElement.remove();
+      }
+
+      appendMessage('bot', '⚠️ Server is not working , try again later . thank you!.');
       console.error("Fetch error:", err);
+      scrollToBottom();
     });
+
+  input.focus(); // 👈 Keeps input ready for next question
 }
 
 
