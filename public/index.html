@@ -280,6 +280,18 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
+    function typeEffect(element, text, speed = 25) {
+  let index = 0;
+  const interval = setInterval(() => {
+    if (index < text.length) {
+      element.innerHTML += text.charAt(index);
+      index++;
+    } else {
+      clearInterval(interval);
+    }
+  }, speed);
+}
+
    function sendMessage() {
   const message = input.value.trim();
   if (!message) return;
@@ -305,7 +317,27 @@
     data.output ||                         // raw fallback
     '⚠️ No reply.';
 
-  appendMessage('bot', reply);
+ // Remove "Typing..." bubble
+chat.lastChild.remove();
+
+// Create a new bubble but keep it empty for animation
+const bubble = document.createElement('div');
+bubble.classList.add('bubble', 'bot');
+chat.appendChild(bubble);
+chat.scrollTop = chat.scrollHeight;
+
+// Apply typing effect
+typeEffect(bubble, reply, 25);
+
+// Add timestamp after typing completes
+setTimeout(() => {
+  const stamp = document.createElement('div');
+  stamp.className = 'timestamp';
+  stamp.textContent = new Date().toLocaleTimeString();
+  bubble.appendChild(stamp);
+  chat.scrollTop = chat.scrollHeight;
+}, reply.length * 25 + 300);
+
 })
 
     .catch(err => {
