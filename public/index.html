@@ -306,8 +306,7 @@
     body: JSON.stringify({ message })
   })
     .then(res => res.json())
-    .then(data => {
-  chat.lastChild.remove();
+  .then(data => {
   console.log("Response from backend:", data);
 
   const reply =
@@ -317,28 +316,31 @@
     data.output ||                         // raw fallback
     '⚠️ No reply.';
 
- // Remove "Typing..." bubble
-chat.lastChild.remove();
+  // ✅ Remove ONLY the "Typing..." bubble safely
+  const typingBubble = document.querySelector('.bubble.bot i');
+  if (typingBubble && typingBubble.parentElement) {
+    typingBubble.parentElement.remove();
+  }
 
-// Create a new bubble but keep it empty for animation
-const bubble = document.createElement('div');
-bubble.classList.add('bubble', 'bot');
-chat.appendChild(bubble);
-chat.scrollTop = chat.scrollHeight;
-
-// Apply typing effect
-typeEffect(bubble, reply, 25);
-
-// Add timestamp after typing completes
-setTimeout(() => {
-  const stamp = document.createElement('div');
-  stamp.className = 'timestamp';
-  stamp.textContent = new Date().toLocaleTimeString();
-  bubble.appendChild(stamp);
+  // ✅ Create a new bubble for the bot’s message
+  const bubble = document.createElement('div');
+  bubble.classList.add('bubble', 'bot');
+  chat.appendChild(bubble);
   chat.scrollTop = chat.scrollHeight;
-}, reply.length * 25 + 300);
 
+  // ✅ Apply typing effect
+  typeEffect(bubble, reply, 25);
+
+  // ✅ Add timestamp after typing finishes
+  setTimeout(() => {
+    const stamp = document.createElement('div');
+    stamp.className = 'timestamp';
+    stamp.textContent = new Date().toLocaleTimeString();
+    bubble.appendChild(stamp);
+    chat.scrollTop = chat.scrollHeight;
+  }, reply.length * 25 + 300);
 })
+
 
     .catch(err => {
       chat.lastChild.remove();
